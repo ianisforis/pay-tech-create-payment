@@ -32,7 +32,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleWebClientException_ReturnsPaymentErrorView() {
+    void handle_WebClientException_ReturnsPaymentErrorView() {
         WebClientResponseException exception = WebClientResponseException.create(
             BAD_REQUEST.value(),
             "Bad Request",

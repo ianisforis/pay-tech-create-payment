@@ -72,17 +72,14 @@ class PaymentServiceTest {
 
     @Test
     void generateIdempotencyKey_generates_unique_keys() {
-        // When
         String key1 = paymentService.generateIdempotencyKey();
         String key2 = paymentService.generateIdempotencyKey();
-        
-        // Then
+
         assertNotEquals(key1, key2);
     }
 
     @Test
     void processPayment_new_payment_success() {
-        // Given
         setupWebClientMocks();
         PaymentRequest request = new PaymentRequest(new BigDecimal("100.00"), "new-key");
         IdempotencyKey newKey = new IdempotencyKey("new-key");
@@ -98,11 +95,9 @@ class PaymentServiceTest {
         when(idempotencyKeyRepository.save(any(IdempotencyKey.class))).thenReturn(newKey);
         when(responseSpec.bodyToMono(PaymentApiResponse.class)).thenReturn(Mono.just(response));
         when(bindingResult.hasErrors()).thenReturn(false);
-        
-        // When
+
         String redirectUrl = paymentService.processPayment(request, bindingResult);
-        
-        // Then
+
         assertEquals("https://redirect.example.com", redirectUrl);
         verify(idempotencyKeyRepository, times(2)).save(any(IdempotencyKey.class));
         verify(idempotencyKeyRepository, atLeastOnce()).save(argThat(key -> 
@@ -113,7 +108,6 @@ class PaymentServiceTest {
 
     @Test
     void processPayment_already_processed_payment_throws_exception() {
-        // Given
         PaymentRequest request = new PaymentRequest(new BigDecimal("100.00"), "existing-key");
         IdempotencyKey existingKey = new IdempotencyKey("existing-key");
         existingKey.setPaymentId("payment-123");
@@ -121,8 +115,7 @@ class PaymentServiceTest {
         when(idempotencyKeyRepository.findByKey("existing-key"))
                 .thenReturn(Optional.of(existingKey));
         when(bindingResult.hasErrors()).thenReturn(false);
-        
-        // When & Then
+
         PaymentException exception = assertThrows(PaymentException.class, () -> {
             paymentService.processPayment(request, bindingResult);
         });
@@ -146,8 +139,7 @@ class PaymentServiceTest {
         when(idempotencyKeyRepository.save(any(IdempotencyKey.class))).thenReturn(savedKey);
         when(responseSpec.bodyToMono(PaymentApiResponse.class)).thenReturn(Mono.empty());
         when(bindingResult.hasErrors()).thenReturn(false);
-        
-        // When & Then
+
         PaymentException exception = assertThrows(PaymentException.class, () -> {
             paymentService.processPayment(request, bindingResult);
         });
@@ -158,7 +150,6 @@ class PaymentServiceTest {
 
     @Test
     void processPayment_null_result_throws_PaymentException() {
-        // Given
         setupWebClientMocks();
         PaymentRequest request = new PaymentRequest(new BigDecimal("100.00"), "test-key");
         PaymentApiResponse response = new PaymentApiResponse("2023-01-01T00:00:00", 200, null);
@@ -170,8 +161,7 @@ class PaymentServiceTest {
         when(idempotencyKeyRepository.save(any(IdempotencyKey.class))).thenReturn(savedKey);
         when(responseSpec.bodyToMono(PaymentApiResponse.class)).thenReturn(Mono.just(response));
         when(bindingResult.hasErrors()).thenReturn(false);
-        
-        // When & Then
+
         PaymentException exception = assertThrows(PaymentException.class, () -> {
             paymentService.processPayment(request, bindingResult);
         });
@@ -182,7 +172,6 @@ class PaymentServiceTest {
 
     @Test
     void processPayment_empty_redirect_url_throws_PaymentException() {
-        // Given
         setupWebClientMocks();
         PaymentRequest request = new PaymentRequest(new BigDecimal("100.00"), "test-key");
         PaymentApiResponse.PaymentResult result = new PaymentApiResponse.PaymentResult(
@@ -199,8 +188,7 @@ class PaymentServiceTest {
         when(idempotencyKeyRepository.save(any(IdempotencyKey.class))).thenReturn(savedKey);
         when(responseSpec.bodyToMono(PaymentApiResponse.class)).thenReturn(Mono.just(response));
         when(bindingResult.hasErrors()).thenReturn(false);
-        
-        // When & Then
+
         PaymentException exception = assertThrows(PaymentException.class, () -> {
             paymentService.processPayment(request, bindingResult);
         });
@@ -211,7 +199,6 @@ class PaymentServiceTest {
 
     @Test
     void processPayment_WebClientResponseException_throws_payment_exception() {
-        // Given
         setupWebClientMocks();
         PaymentRequest request = new PaymentRequest(new BigDecimal("100.00"), "test-key");
         WebClientResponseException webClientException = WebClientResponseException.create(
@@ -229,8 +216,7 @@ class PaymentServiceTest {
         when(idempotencyKeyRepository.save(any(IdempotencyKey.class))).thenReturn(savedKey);
         when(responseSpec.bodyToMono(PaymentApiResponse.class)).thenReturn(Mono.error(webClientException));
         when(bindingResult.hasErrors()).thenReturn(false);
-        
-        // When & Then
+
         PaymentException exception = assertThrows(PaymentException.class, () -> {
             paymentService.processPayment(request, bindingResult);
         });
@@ -242,7 +228,6 @@ class PaymentServiceTest {
 
     @Test
     void processPayment_RuntimeException_throws_PaymentException() {
-        // Given
         setupWebClientMocks();
         PaymentRequest request = new PaymentRequest(new BigDecimal("100.00"), "test-key");
         RuntimeException runtimeException = new RuntimeException("Network error");
@@ -254,8 +239,7 @@ class PaymentServiceTest {
         when(idempotencyKeyRepository.save(any(IdempotencyKey.class))).thenReturn(savedKey);
         when(responseSpec.bodyToMono(PaymentApiResponse.class)).thenReturn(Mono.error(runtimeException));
         when(bindingResult.hasErrors()).thenReturn(false);
-        
-        // When & Then
+
         PaymentException exception = assertThrows(PaymentException.class, () -> {
             paymentService.processPayment(request, bindingResult);
         });
@@ -267,14 +251,11 @@ class PaymentServiceTest {
 
     @Test
     void processPayment_validation_errors_returns_error_view() {
-        // Given
         PaymentRequest request = new PaymentRequest(new BigDecimal("100.00"), "test-key");
         when(bindingResult.hasErrors()).thenReturn(true);
-        
-        // When
+
         String result = paymentService.processPayment(request, bindingResult);
-        
-        // Then
+
         assertEquals("payment-form", result);
         verifyNoInteractions(idempotencyKeyRepository);
         verifyNoInteractions(webClient);
