@@ -13,6 +13,13 @@ A Spring Boot web application that integrates with the pay.tech API to process p
 - Form validation with user-friendly error messages
 - Responsive web interface using Thymeleaf templates
 
+## Validation
+
+- Basic validation is performed directly on the form to prevent obvious input mistakes, such as zero or negative amounts.
+- If the entered amount exceeds `1,000,000,000`, an error page will be displayed.
+- Idempotency is enforced: if you attempt to reprocess the same payment after reaching the PayTech process payment page 
+(e.g., by clicking the browser's "Back" button and trying to pay again), you will receive an error.
+
 ## Requirements
 
 - Java 21 or higher
