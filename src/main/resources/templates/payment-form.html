@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .info {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Payment Form</h1>
+        
+        <div class="info">
+            <p>Enter the amount you would like to pay in EUR. The payment will be processed through our payment gateway.</p>
+        </div>
+
+        <form th:action="@{/payment}" method="post" th:object="${paymentRequest}">
+            <input type="hidden" th:field="*{idempotencyKey}"/>
+            
+            <div class="form-group">
+                <label for="amount">Amount (EUR):</label>
+                <input type="number" 
+                       id="amount" 
+                       th:field="*{amount}" 
+                       step="0.01" 
+                       min="0.01" 
+                       placeholder="0.00" 
+                       required/>
+                <div th:if="${#fields.hasErrors('amount')}" 
+                     th:errors="*{amount}" 
+                     class="error"></div>
+            </div>
+            
+            <button type="submit">Pay</button>
+        </form>
+    </div>
+</body>
+</html>
